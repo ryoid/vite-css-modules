@@ -227,16 +227,25 @@ installed package in each consuming TypeScript project:
 
 ```json
 {
-    "contentMappers": [{
-        "package": "vite-css-modules",
-        "extensions": [".module.css"],
-        "options": { "exportMode": "default" }
-    }]
+    "contentMappers": [
+        {
+            "package": "vite-css-modules",
+            "extensions": [
+                ".module.css"
+            ],
+            "options": { "exportMode": "default" }
+        }
+    ]
 }
 ```
 
 Run `tsc --runExternalCode` (or the equivalent TypeScript 7.1 compiler command).
-VS Code also requires workspace trust and permission to run the mapper.
+Editor support requires a language-server build that can enable content mappers,
+in addition to workspace trust and mapper permission. Command-line support does
+not establish editor support: the tested TypeScript 7.1.0-beta compiler accepts
+`--runExternalCode`, but its `--lsp --stdio` server rejected that flag and reported
+TS18068 when started without it. Treat editor adoption as blocked until a supported
+server invocation or a newer build passes definition and unsaved-edit checks.
 Remove adjacent CSS declaration files to let TypeScript use the mapper.
 Keep `generateSourceTypes` disabled when using this mode.
 
