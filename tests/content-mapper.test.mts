@@ -116,6 +116,14 @@ test('supports export modes, empty modules, and naming conventions', async (t) =
 	}, { localsConvention: 'camelCaseOnly' }), /foo-bar/);
 });
 
+test('CSS exports do not collide with virtual module identifiers', async (t) => {
+	pass(await compile(t, {
+		'index.ts': 'import styles from "./style.module.css"; export const values: string[] = [styles.__css_dependency_1, styles.__default_export__];',
+		'style.module.css': '.__css_dependency_1 { composes: base from "./base.module.css"; } .__default_export__ {}',
+		'base.module.css': '.base {}',
+	}));
+});
+
 test('checks composed dependencies with the TypeScript module graph', async (t) => {
 	const files = {
 		'index.ts': 'import styles from "./style.module.css"; export const value = styles.drawer;',

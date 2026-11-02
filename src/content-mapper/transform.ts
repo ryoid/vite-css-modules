@@ -103,7 +103,11 @@ export const transform = (
 			seen.add(identity);
 			const index = seen.size;
 			const specifier = JSON.stringify(dependency.specifier);
-			const prefix = `import type * as __css_dependency_${index} from `;
+			let dependencyName = `__css_dependency_${index}`;
+			while (variableToClass.has(dependencyName)) {
+				dependencyName += '_';
+			}
+			const prefix = `import type * as ${dependencyName} from `;
 			const sourceStart = content.indexOf(dependency.specifier);
 			if (sourceStart !== -1) {
 				mappings.push([
@@ -120,7 +124,7 @@ export const transform = (
 				? dependency.name
 				: (localsConvention?.(dependency.name, dependency.name, fileName) ?? dependency.name);
 			const access = exportMode === 'named' ? '' : '.default';
-			text += `void ({} as typeof __css_dependency_${index}${access})[${JSON.stringify(name)}];\n`;
+			text += `void ({} as typeof ${dependencyName}${access})[${JSON.stringify(name)}];\n`;
 		}
 
 		return {

@@ -80,9 +80,10 @@ const generateNamedExportLines = (
 const generateDefaultExportLines = (
 	exportedVariables: ExportedVariable[],
 	readonly: boolean,
+	defaultExportName: string,
 ): MappedLine[] => {
 	const lines: MappedLine[] = [
-		{ text: 'declare const __default_export__: {' },
+		{ text: `declare const ${defaultExportName}: {` },
 	];
 
 	for (const [jsVariable, exportName] of exportedVariables) {
@@ -100,7 +101,7 @@ const generateDefaultExportLines = (
 
 	lines.push(
 		{ text: '};' },
-		{ text: 'export default __default_export__;' },
+		{ text: `export default ${defaultExportName};` },
 	);
 
 	return lines;
@@ -152,7 +153,14 @@ export const generateTypeModel = (
 	}
 
 	if (exportMode === 'both' || exportMode === 'default') {
-		codeLines.push({ text: '' }, ...generateDefaultExportLines(exportedVariables, readonly));
+		let defaultExportName = '__default_export__';
+		while (seenVariables.has(defaultExportName)) {
+			defaultExportName += '_';
+		}
+		codeLines.push(
+			{ text: '' },
+			...generateDefaultExportLines(exportedVariables, readonly, defaultExportName),
+		);
 	}
 
 	return {
