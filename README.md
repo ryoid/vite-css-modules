@@ -216,6 +216,58 @@ Configuring the CSS Modules behavior remains the same as before.
 
 Read the [Vite docs](https://vite.dev/guide/features.html#css-modules) to learn more.
 
+### TypeScript 7.1 content mapper (fork)
+
+This fork adds exact CSS Module types without writing `.d.ts` files. It requires
+TypeScript 7.1 or newer, including in the editor. The existing Vite plugin and
+legacy declaration generator remain available.
+
+Build the fork with `pnpm build` before installing it locally. Register the
+installed package in each consuming TypeScript project:
+
+```json
+{
+    "contentMappers": [{
+        "package": "vite-css-modules",
+        "extensions": [".module.css"],
+        "options": { "exportMode": "default" }
+    }]
+}
+```
+
+Run `tsc --runExternalCode` (or the equivalent TypeScript 7.1 compiler command).
+VS Code also requires workspace trust and permission to run the mapper.
+Remove adjacent CSS declaration files to let TypeScript use the mapper.
+Keep `generateSourceTypes` disabled when using this mode.
+
+The mapper defaults to default exports for standard Vite CSS Modules. When using
+`patchCssModules()`, set its `exportMode` and the mapper's `exportMode` to the same
+value (`default`, `named`, or `both`). Also match `localsConvention`,
+`scopeBehaviour`, and `exportGlobals` with the runtime CSS Modules settings.
+The mapper accepts the four string `localsConvention` modes supported by Vite.
+Unknown options produce a diagnostic.
+
+The mapper shares PostCSS module processing and type generation with the Vite
+plugin and CLI. It reads the content supplied by TypeScript, including unsaved
+edits, and returns virtual ES-module types with CSS definition mappings. Default
+export properties are readonly. Virtual imports let TypeScript check `composes`
+and `@value` dependencies without reading stale files from disk.
+
+This initial implementation supports plain `.module.css`. It does not load
+`vite.config`, custom PostCSS plugins, Lightning CSS, Sass, Less, or custom naming
+functions. Resolve dependency aliases through TypeScript's `paths`; Vite-only
+aliases are not available. The Vite build still validates runtime composition,
+including cycles. TypeScript accepts cycles when the referenced exports exist.
+
+A wildcard declaration such as `declare module '*.module.css'` still permits
+missing CSS paths, even with a mapper. Vite and Next.js supply such declarations;
+keep the bundler's missing-file check until that fallback is addressed. Consumers
+on older TypeScript versions still need generated declarations.
+
+Run `pnpm build && pnpm test:content-mapper` for the compiler and protocol checks.
+This fork has not been published to npm; the upstream npm package does not include
+this entry point.
+
 ### Type checking & navigation for CSS Modules
 
 This plugin can generate type definition (`.d.ts`) files for CSS Modules, providing autocomplete and type checking for class names. For example, importing `style.module.css` will create a `style.module.css.d.ts` next to it:

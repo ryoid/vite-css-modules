@@ -79,6 +79,7 @@ const generateNamedExportLines = (
 
 const generateDefaultExportLines = (
 	exportedVariables: ExportedVariable[],
+	readonly: boolean,
 ): MappedLine[] => {
 	const lines: MappedLine[] = [
 		{ text: 'declare const __default_export__: {' },
@@ -87,11 +88,11 @@ const generateDefaultExportLines = (
 	for (const [jsVariable, exportName] of exportedVariables) {
 		const key = jsVariable === exportName ? jsVariable : exportName;
 		lines.push({
-			text: `\t${key}: typeof ${jsVariable};`,
+			text: `\t${readonly ? 'readonly ' : ''}${key}: typeof ${jsVariable};`,
 			...(jsVariable === exportName && {
 				mapping: {
 					variableName: jsVariable,
-					column: 1,
+					column: readonly ? 10 : 1,
 				},
 			}),
 		});
@@ -105,11 +106,11 @@ const generateDefaultExportLines = (
 	return lines;
 };
 
-export const generateTypes = (
+export const generateTypeModel = (
 	exports: Exports,
 	exportMode: ExportMode,
 	allowArbitraryNamedExports = false,
-	sourceMapOptions?: SourceMapOptions,
+	readonly = false,
 ) => {
 	const variableToClass = new Map<string, string>();
 	const seenVariables = new Set<string>();
@@ -141,10 +142,6 @@ export const generateTypes = (
 		}
 	}
 
-	if (exportedVariables.length === 0) {
-		return dtsTemplate();
-	}
-
 	if (exportMode === 'both' || exportMode === 'named') {
 		const namedLines = generateNamedExportLines(
 			exportedVariables, exportMode, allowArbitraryNamedExports,
@@ -155,7 +152,27 @@ export const generateTypes = (
 	}
 
 	if (exportMode === 'both' || exportMode === 'default') {
-		codeLines.push({ text: '' }, ...generateDefaultExportLines(exportedVariables));
+		codeLines.push({ text: '' }, ...generateDefaultExportLines(exportedVariables, readonly));
+	}
+
+	return {
+		hasExports: exportedVariables.length > 0,
+		codeLines,
+		variableToClass,
+	};
+};
+
+export const generateTypes = (
+	exports: Exports,
+	exportMode: ExportMode,
+	allowArbitraryNamedExports = false,
+	sourceMapOptions?: SourceMapOptions,
+) => {
+	const { codeLines, variableToClass, hasExports } = generateTypeModel(
+		exports, exportMode, allowArbitraryNamedExports,
+	);
+	if (!hasExports) {
+		return dtsTemplate();
 	}
 
 	const code = codeLines.map(line => line.text).join('\n');
