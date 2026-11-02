@@ -7,8 +7,8 @@ import { getLocalesConventionFunction, shouldKeepOriginalExport } from '../plugi
 import type { Exports } from '../plugin/generate-esm.js';
 import { transform as postcssTransform } from '../plugin/transformers/postcss/index.js';
 import { cleanUrl, getCssModuleUrl } from '../plugin/url-utils.js';
+import { cssModuleExportsToExports } from '../plugin/css-module-exports-to-exports.js';
 import type { ProjectContext } from './project-context.js';
-import { cssModuleExportsToExports } from './css-module-exports-to-exports.js';
 
 type CssModuleResult = {
 	exports: Exports;

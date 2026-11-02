@@ -1,6 +1,6 @@
-import type { LocalsConventionFunction } from '../plugin/locals-convention.js';
-import type { Exports } from '../plugin/generate-esm.js';
-import type { ClassComposition, CSSModuleExports } from '../plugin/transformers/postcss/types.js';
+import type { LocalsConventionFunction } from './locals-convention.js';
+import type { Exports } from './generate-esm.js';
+import type { ClassComposition, CSSModuleExports } from './transformers/postcss/types.js';
 
 type ResolveComposition = (
 	composition: ClassComposition,
