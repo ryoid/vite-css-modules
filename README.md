@@ -227,15 +227,11 @@ installed package in each consuming TypeScript project:
 
 ```json
 {
-    "contentMappers": [
-        {
-            "package": "vite-css-modules",
-            "extensions": [
-                ".module.css"
-            ],
-            "options": { "exportMode": "default" }
-        }
-    ]
+    "contentMappers": [{
+        "package": "vite-css-modules",
+        "extensions": [".module.css"],
+        "options": { "exportMode": "default" }
+    }]
 }
 ```
 
